@@ -1,0 +1,22 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+npm-debug.log*
+
+# Go
+coverage.out
+*.test
+/vendor/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
