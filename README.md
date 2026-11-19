@@ -2,74 +2,67 @@
 
 **Saragosa** is a Linux-focused network intrusion detection and prevention management platform built around the Suricata engine.
 
-The project aims to provide a practical web interface for sensor health, security events, alert investigation, ruleset administration, and carefully controlled response workflows.
+Saragosa provides the application layer for sensor visibility, EVE event collection, alert investigation, ruleset administration, and audited operations. Suricata remains the packet inspection engine.
 
-> **Project status:** Planning / PRD stage. Do not treat planned capabilities as implemented features.
+> **Project status:** Early foundation. The web shell, API health endpoint, and stdin-based EVE JSON parser are present. Database persistence, sensor connectivity, authentication, and active IPS are not implemented.
 
-## Project direction
+## Current foundation
 
-Saragosa does not intend to reimplement packet inspection. It uses **Suricata** for network inspection and builds an application layer for event collection, visibility, configuration management, and audited operations.
+- Next.js dashboard shell with honest, non-live status labels.
+- Go API with `GET /api/v1/health`, bound to loopback by default.
+- Go collector foundation that validates EVE JSON Lines from standard input and reports aggregate counts.
+- Go unit tests for the health response contract and EVE event parser.
+- Architecture and development documentation.
+- GitHub Actions workflow for Go tests and web typecheck/build.
 
-### Planned capabilities
+The health endpoint reports API process health only. The collector does not yet tail Suricata files or persist events. No dashboard metric represents live network telemetry.
 
-- Suricata sensor and service health
-- EVE JSON event ingestion
-- Alert search, filtering, and investigation
-- Ruleset import and validation
-- Role-based access control
-- Administrative audit logs
-- IDS passive mode as the default
-- Experimental, opt-in inline IPS workflow
-
-## Proposed technology
+## Technology
 
 | Area | Technology |
 |---|---|
-| Detection engine | Suricata |
-| Backend and collector | Go |
-| Web dashboard | Next.js, TypeScript |
-| UI | Tailwind CSS, Lucide React |
-| Database | PostgreSQL |
+| Detection engine | Suricata (integration planned) |
+| Backend and collector | Go 1.27 |
+| Web dashboard | Next.js 16, React 19, TypeScript |
+| UI | Tailwind CSS 4 |
+| Database | PostgreSQL (planned) |
 | Event format | Suricata EVE JSON |
 | Initial target | Ubuntu Server Linux |
-| Testing | Go tests, integration tests, PCAP fixtures |
+| Runtime | Node.js 26 LTS |
 
-Dependency versions will be pinned during implementation. No performance or detection-rate claims are made before repeatable benchmarks exist.
+## Repository layout
 
-## Development roadmap
+- `app/`: Next.js dashboard
+- `services/api/`: Go HTTP API
+- `services/collector/`: EVE JSON parser/collector foundation
+- `docs/PRD.md`: product requirements and phased acceptance criteria
+- `docs/architecture.md`: deployment model and trust boundaries
+- `docs/DEVELOPMENT.md`: local development instructions
 
-Implementation is divided into gated phases:
+## Development
 
-1. Repository reconnaissance and planning
-2. Project foundation
-3. Suricata lab and EVE JSON verification
-4. Event collector
-5. Alert API and dashboard
-6. Authentication, RBAC, and audit
-7. Ruleset management
-8. Experimental inline IPS in an isolated lab
-9. Hardening and release candidate
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for commands and prerequisites.
 
-See [docs/PRD.md](docs/PRD.md) for scope, requirements, acceptance criteria, test strategy, and mandatory AI-agent anti-slop rules.
+## Roadmap
 
-## Safety notes
+1. Foundation
+2. Suricata passive IDS lab and EVE verification
+3. Persistent collector and event pipeline
+4. Alert API and live dashboard
+5. Authentication, RBAC, and audit
+6. Ruleset management
+7. Experimental inline IPS in an isolated lab
+8. Hardening and release candidate
+
+## Safety
 
 - Passive IDS is the default.
-- Inline IPS can interrupt network connectivity and must remain opt-in.
-- Test blocking behavior only in an isolated lab with a recovery path.
-- Saragosa is not a replacement for an enterprise NGFW, SIEM, EDR, or NDR platform.
-- Do not expose management interfaces directly to untrusted networks.
+- Inline IPS is not implemented and must only be tested in an isolated lab.
+- The API binds to `127.0.0.1:8080` by default.
+- Do not run the application as root.
 - Never commit credentials, private keys, sensitive PCAP files, or production secrets.
-
-## Current limitations
-
-At the PRD stage, no working sensor integration, dashboard, blocking action, or production deployment should be assumed. Feature status must be updated only after implementation and tests provide evidence.
-
-## Documentation
-
-- Indonesian PRD: [docs/PRD.md](docs/PRD.md)
-- Indonesian README: [README.id.md](README.id.md)
+- Saragosa is not a replacement for an enterprise NGFW, SIEM, EDR, or NDR platform.
 
 ## License
 
-No license has been selected yet. Until a license is added, do not assume that the code may be reused, modified, or redistributed.
+See [LICENSE](LICENSE) for the MIT License.
