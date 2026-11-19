@@ -1,75 +1,68 @@
 # Saragosa
 
-**Saragosa** adalah platform pengelolaan Network Intrusion Detection and Prevention System (IDS/IPS) yang berfokus pada Linux dan menggunakan engine Suricata.
+**Saragosa** adalah platform pengelolaan IDS/IPS berbasis Linux yang dibangun di sekitar engine Suricata.
 
-Tujuan proyek ini adalah menyediakan antarmuka web praktis untuk memantau kesehatan sensor, melihat event keamanan, menyelidiki alert, mengelola ruleset, dan menjalankan tindakan respons secara terkontrol.
+Saragosa menyediakan lapisan aplikasi untuk visibilitas sensor, pengumpulan event EVE, investigasi alert, pengelolaan ruleset, dan operasi yang tercatat dalam audit. Suricata tetap menjadi engine inspeksi paket.
 
-> **Status proyek:** Tahap perencanaan / PRD. Fitur yang direncanakan tidak boleh dianggap sudah tersedia.
+> **Status proyek:** Fondasi awal. Kerangka dashboard, endpoint health API, dan parser EVE JSON berbasis stdin sudah tersedia. Penyimpanan database, koneksi sensor, autentikasi, dan IPS aktif belum diimplementasikan.
 
-## Arah proyek
+## Fondasi saat ini
 
-Saragosa tidak akan membuat ulang packet inspection engine. Saragosa menggunakan **Suricata** untuk inspeksi jaringan dan membangun lapisan aplikasi untuk pengumpulan event, visibilitas, pengelolaan konfigurasi, serta operasi yang tercatat dalam audit log.
+- Kerangka dashboard Next.js dengan label status yang jujur dan bukan data live.
+- Go API dengan endpoint `GET /api/v1/health`, default hanya listen di loopback.
+- Fondasi collector Go yang memvalidasi EVE JSON Lines dari standard input dan melaporkan jumlah event.
+- Unit test Go untuk kontrak health response dan parser event EVE.
+- Dokumentasi arsitektur dan panduan pengembangan.
+- GitHub Actions untuk Go tests serta typecheck/build web.
 
-### Fitur yang direncanakan
+Health endpoint hanya melaporkan kondisi proses API. Collector belum membaca file Suricata secara langsung dan belum menyimpan event. Tidak ada metrik dashboard yang mengaku sebagai telemetry jaringan live.
 
-- Status kesehatan sensor dan service Suricata
-- Ingesti event EVE JSON
-- Pencarian, filter, dan investigasi alert
-- Import dan validasi ruleset
-- Role-based access control
-- Audit log administrator
-- Mode IDS pasif sebagai pengaturan default
-- Alur IPS inline eksperimental dan opt-in
-
-## Teknologi yang diusulkan
+## Teknologi
 
 | Area | Teknologi |
 |---|---|
-| Detection engine | Suricata |
-| Backend dan collector | Go |
-| Dashboard web | Next.js, TypeScript |
-| UI | Tailwind CSS, Lucide React |
-| Database | PostgreSQL |
+| Detection engine | Suricata (integrasi direncanakan) |
+| Backend dan collector | Go 1.27 |
+| Dashboard web | Next.js 16, React 19, TypeScript |
+| UI | Tailwind CSS 4 |
+| Database | PostgreSQL (direncanakan) |
 | Format event | Suricata EVE JSON |
 | Target awal | Ubuntu Server Linux |
-| Pengujian | Go tests, integration tests, PCAP fixtures |
+| Runtime | Node.js 26 LTS |
 
-Versi dependency akan dikunci saat implementasi. Tidak ada klaim performa atau tingkat deteksi sebelum benchmark yang dapat diulang tersedia.
+## Struktur repository
 
-## Roadmap pengembangan
+- `app/`: dashboard Next.js
+- `services/api/`: Go HTTP API
+- `services/collector/`: fondasi parser/collector EVE JSON
+- `docs/PRD.md`: kebutuhan produk dan kriteria penerimaan per tahap
+- `docs/architecture.md`: model deployment dan batas kepercayaan
+- `docs/DEVELOPMENT.md`: panduan pengembangan lokal
 
-Implementasi dibagi menjadi beberapa tahap dengan gerbang kelulusan:
+## Pengembangan
 
-1. Pemeriksaan repository dan perencanaan
-2. Fondasi proyek
-3. Lab Suricata dan verifikasi EVE JSON
-4. Event collector
-5. Alert API dan dashboard
-6. Autentikasi, RBAC, dan audit
-7. Pengelolaan ruleset
-8. IPS inline eksperimental di lab terisolasi
-9. Hardening dan release candidate
+Lihat [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) untuk perintah dan prasyarat.
 
-Lihat [docs/PRD.md](docs/PRD.md) untuk ruang lingkup, kebutuhan, kriteria penerimaan, strategi pengujian, dan aturan anti AI slop yang wajib dipatuhi AI Agent.
+## Roadmap
 
-## Catatan keamanan
+1. Fondasi proyek
+2. Lab Suricata IDS pasif dan verifikasi EVE
+3. Collector persisten dan pipeline event
+4. Alert API dan dashboard live
+5. Autentikasi, RBAC, dan audit
+6. Pengelolaan ruleset
+7. Eksperimen IPS inline di lab terisolasi
+8. Hardening dan release candidate
+
+## Keamanan
 
 - IDS pasif adalah mode default.
-- IPS inline dapat mengganggu konektivitas jaringan dan harus opt-in.
-- Uji pemblokiran hanya di lab terisolasi dengan jalur pemulihan.
+- IPS inline belum diimplementasikan dan hanya boleh diuji di lab terisolasi.
+- API default listen pada `127.0.0.1:8080`.
+- Jangan menjalankan aplikasi sebagai root.
+- Jangan commit kredensial, private key, PCAP sensitif, atau secret produksi.
 - Saragosa bukan pengganti NGFW, SIEM, EDR, atau NDR enterprise.
-- Jangan membuka antarmuka manajemen ke jaringan yang tidak tepercaya.
-- Jangan pernah melakukan commit terhadap kredensial, private key, PCAP sensitif, atau secret produksi.
-
-## Batasan saat ini
-
-Pada tahap PRD, integrasi sensor, dashboard aktif, tindakan pemblokiran, maupun deployment produksi belum boleh dianggap sudah berfungsi. Status fitur hanya boleh diperbarui setelah implementasi dan pengujian memberikan bukti.
-
-## Dokumentasi
-
-- PRD bahasa Indonesia: [docs/PRD.md](docs/PRD.md)
-- README bahasa Inggris: [README.md](README.md)
 
 ## Lisensi
 
-Lisensi belum ditentukan. Sebelum lisensi ditambahkan, jangan menganggap kode boleh digunakan ulang, dimodifikasi, atau didistribusikan.
+Lihat [LICENSE](LICENSE) untuk lisensi MIT.
