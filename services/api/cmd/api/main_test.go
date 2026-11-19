@@ -5,28 +5,18 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 )
 
 func TestHealthEndpoint(t *testing.T) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /api/v1/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		_ = json.NewEncoder(w).Encode(healthResponse{
-			Status:    "ok",
-			Service:   "saragosa-api",
-			Mode:      "ids-passive",
-			Timestamp: time.Now().UTC(),
-			Scope:     "api-process-only",
-		})
-	})
-
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/health", nil)
 	rec := httptest.NewRecorder()
-	mux.ServeHTTP(rec, req)
+	newHandler().ServeHTTP(rec, req)
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected status %d, got %d", http.StatusOK, rec.Code)
+	}
+	if got := rec.Header().Get("Cache-Control"); got != "no-store" {
+		t.Fatalf("expected Cache-Control no-store, got %q", got)
 	}
 
 	var got healthResponse
@@ -38,5 +28,15 @@ func TestHealthEndpoint(t *testing.T) {
 	}
 	if got.Scope != "api-process-only" {
 		t.Fatalf("health scope must not imply Suricata health, got %q", got.Scope)
+	}
+}
+
+func TestHealthEndpointRejectsOtherMethods(t *testing.T) {
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/health", nil)
+	rec := httptest.NewRecorder()
+	newHandler().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("expected status %d, got %d", http.StatusMethodNotAllowed, rec.Code)
 	}
 }
