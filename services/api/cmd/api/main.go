@@ -20,13 +20,7 @@ type healthResponse struct {
 	Scope     string    `json:"scope"`
 }
 
-func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	addr := os.Getenv("SARAGOSA_API_ADDR")
-	if addr == "" {
-		addr = "127.0.0.1:8080"
-	}
-
+func newHandler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/v1/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -40,10 +34,19 @@ func main() {
 			Scope:     "api-process-only",
 		})
 	})
+	return mux
+}
+
+func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	addr := os.Getenv("SARAGOSA_API_ADDR")
+	if addr == "" {
+		addr = "127.0.0.1:8080"
+	}
 
 	server := &http.Server{
 		Addr:              addr,
-		Handler:           mux,
+		Handler:           newHandler(),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
